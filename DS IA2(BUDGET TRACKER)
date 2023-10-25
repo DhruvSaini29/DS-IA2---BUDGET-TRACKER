@@ -1,0 +1,136 @@
+#include <stdio.h>
+#include <time.h>
+#include <string.h>
+
+#define MAX_RECORDS 100
+#define MAX_CATEGORY_LENGTH 50
+
+struct Record {
+    float amount;
+    time_t timestamp;
+    char category[MAX_CATEGORY_LENGTH];
+};
+
+struct IncomeExpenseTracker {
+    struct Record income[MAX_RECORDS];
+    struct Record expenses[MAX_RECORDS];
+    int incomeCount;
+    int expenseCount;
+};
+
+void initTracker(struct IncomeExpenseTracker *tracker) {
+    tracker->incomeCount = 0;
+    tracker->expenseCount = 0;
+}
+
+void addIncome(struct IncomeExpenseTracker *tracker, float amount, const char *category) {
+    if (tracker->incomeCount < MAX_RECORDS) {
+        struct Record record;
+        record.amount = amount;
+        record.timestamp = time(NULL); // Capture the current timestamp
+        strncpy(record.category, category, MAX_CATEGORY_LENGTH);
+        tracker->income[tracker->incomeCount] = record;
+        tracker->incomeCount++;
+        printf("Income of $%.2f in the category '%s' has been recorded.\n", amount, category);
+    } else {
+        printf("The income record is full. No more entries can be added.\n");
+    }
+}
+
+void addExpense(struct IncomeExpenseTracker *tracker, float amount, const char *category) {
+    if (tracker->expenseCount < MAX_RECORDS) {
+        struct Record record;
+        record.amount = amount;
+        record.timestamp = time(NULL); // Capture the current timestamp
+        strncpy(record.category, category, MAX_CATEGORY_LENGTH);
+        tracker->expenses[tracker->expenseCount] = record;
+        tracker->expenseCount++;
+        printf("An expense of $%.2f in the category '%s' has been recorded.\n", amount, category);
+    } else {
+        printf("The expense record is full. No more entries can be added.\n");
+    }
+}
+
+void viewIncomeHistory(struct IncomeExpenseTracker *tracker) {
+    printf("Income History:\n");
+    for (int i = 0; i < tracker->incomeCount; i++) {
+        struct Record record = tracker->income[i];
+        printf("Category: '%s', Amount: $%.2f, Time: %s\n", record.category, record.amount, ctime(&record.timestamp));
+    }
+} 
+
+void viewExpenseHistory(struct IncomeExpenseTracker *tracker) {
+    printf("Expense History:\n");
+    for (int i = 0; i < tracker->expenseCount; i++) {
+        struct Record record = tracker->expenses[i];
+        printf("Category: '%s', Amount: $%.2f, Time: %s\n", record.category, record.amount, ctime(&record.timestamp));
+    }
+}
+
+float calculateCurrentBalance(struct IncomeExpenseTracker *tracker) {
+    float totalIncome = 0;
+    float totalExpense = 0;
+
+    for (int i = 0; i < tracker->incomeCount; i++) {
+        totalIncome += tracker->income[i].amount;
+    }
+
+    for (int i = 0; i < tracker->expenseCount; i++) {
+        totalExpense += tracker->expenses[i].amount;
+    }
+
+    return totalIncome - totalExpense;
+}
+
+int main() {
+    struct IncomeExpenseTracker tracker;
+    initTracker(&tracker);
+
+    while (1) {
+        printf("Income and Expense Tracker Menu:\n");
+        printf("1. Add Income\n");
+        printf("2. Add Expense\n");
+        printf("3. View Income History\n");
+        printf("4. View Expense History\n");
+        printf("5. Calculate Current Balance\n");
+        printf("6. Exit\n");
+
+        int choice;
+        printf("Please enter your choice: ");
+        scanf("%d", &choice);
+
+        float amount;
+        char category[MAX_CATEGORY_LENGTH];
+
+        switch (choice) {
+            case 1:
+                printf("Enter the income category: ");
+                scanf("%s", category);
+                printf("Enter the income amount: $");
+                scanf("%f", &amount);
+                addIncome(&tracker, amount, category);
+                break;
+            case 2:
+                printf("Enter the expense category: ");
+                scanf("%s", category);
+                printf("Enter the expense amount: $");
+                scanf("%f", &amount);
+                addExpense(&tracker, amount, category);
+                break;
+            case 3:
+                viewIncomeHistory(&tracker);
+                break;
+            case 4:
+                viewExpenseHistory(&tracker);
+                break;
+            case 5:
+                printf("Current Balance: $%.2f\n", calculateCurrentBalance(&tracker));
+                break;
+            case 6:
+                return 0;
+            default:
+                printf("Invalid choice. Please select a valid option.\n");
+        }
+    }
+
+    return 0;
